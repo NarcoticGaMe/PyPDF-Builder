@@ -3,5 +3,5 @@
 Fork of https://github.com/mrgnth/PyPDF-Builder.
 
 List of Changes:
-- Automatically add .pdf when a file is saverd if needed.
-- Added the option in the split tab to rename each new pdf with the one present in a list file (*.txt, *.csv).
+- If needed automatically add .pdf when a file is saved.
+- Added the option in the split tab to rename each new pdf page with a different name taken from a list file(*.txt, *.csv).
