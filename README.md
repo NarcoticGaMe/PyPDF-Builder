@@ -1,6 +1,6 @@
 # PyPDF Builder 
 
-Fork of https://github.com/mrgnth/PyPDF-Builde.
+Fork of https://github.com/mrgnth/PyPDF-Builder.
 
 List of Changes:
 - Automatically add .pdf when a file is saverd if needed.
