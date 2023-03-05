@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import os
 import sys
 import appdirs
@@ -267,6 +265,8 @@ class BgTabManager:
 
     def save_as(self):
         save_filepath = self.parent.get_file_dialog(func=filedialog.asksaveasfilename, widget_title='Save New PDF to …')
+        if not save_filepath[-4:] == ".pdf":
+            save_filepath = save_filepath + ".pdf"
         if self.__source_filepath and self.__bg_filepath:
             out_pdf = PdfFileWriter()
             command = self.__bg_command.get()
@@ -324,6 +324,14 @@ class SplitTabManager:
             self.__split_filepath = choose_split_file
             self.__split_file_info = PDFInfo(self.__split_filepath)
             self.__show_file_info()
+    
+    def open_List(self):
+        choose_split_file = self.parent.get_list_dialog(
+            func=filedialog.askopenfilename, widget_title='Choose list with name')
+        if choose_split_file:
+            self.__split_fileNamePath = choose_split_file
+            # self.__split_file_info = PDFInfo(self.__split_filepath)
+            # self.__show_file_info()
 
     def __show_file_info(self):
         self.__split_file_info_widget.set(self.__split_file_info.pdf_info_string())
@@ -335,12 +343,23 @@ class SplitTabManager:
             # we'll just go the lazy way to count the number of needed digits:
             num_length = len(str(abs(self.__split_file_info.pages)))
             in_pdf = PdfFileReader(open(self.__split_filepath, "rb"))
-            for p in range(self.__split_file_info.pages):
-                output_path = f"{basepath}_{str(p+1).rjust(num_length, '0')}.pdf"
-                out_pdf = PdfFileWriter()
-                out_pdf.addPage(in_pdf.getPage(p))
-                with open(output_path, "wb") as out_pdf_stream:
-                    out_pdf.write(out_pdf_stream)
+            if self.__split_fileNamePath:
+                with open(self.__split_fileNamePath) as f:
+                    all = f.readlines()
+                    for p in range(self.__split_file_info.pages):
+                        name = all[p][:-1]+".pdf"
+                        output_path = f"{basepath[:basepath.rfind('/')]}/{name}"
+                        out_pdf = PdfFileWriter()
+                        out_pdf.addPage(in_pdf.getPage(p))
+                        with open(output_path, "wb") as out_pdf_stream:
+                            out_pdf.write(out_pdf_stream)
+            else:
+                for p in range(self.__split_file_info.pages):
+                    output_path = f"{basepath}_{str(p+1).rjust(num_length, '0')}.pdf"
+                    out_pdf = PdfFileWriter()
+                    out_pdf.addPage(in_pdf.getPage(p))
+                    with open(output_path, "wb") as out_pdf_stream:
+                        out_pdf.write(out_pdf_stream)
             self.parent.save_success(status_text=SPLIT_FILE_SUCCESS.format(os.path.dirname(self.__split_filepath)))
 
 
@@ -388,6 +407,8 @@ class RotateTabManager:
     def save_as(self):
         page_range = (self.__rotate_from_page_widget.get()-1, self.__rotate_to_page_widget.get())
         save_filepath = self.parent.get_file_dialog(func=filedialog.asksaveasfilename, widget_title='Save New PDF to…')
+        if not save_filepath[-4:] == ".pdf":
+            save_filepath = save_filepath + ".pdf"
         if self.__rotate_filepath:
             in_pdf = PdfFileReader(open(self.__rotate_filepath, "rb"))
             out_pdf = PdfFileWriter()
@@ -479,6 +500,8 @@ class JoinTabManager:
         if len(self.__get_join_files()) > 0:
             save_filepath = self.parent.get_file_dialog(
                 func=filedialog.asksaveasfilename, widget_title='Save Joined PDF to…')
+            if not save_filepath[-4:] == ".pdf":
+                save_filepath = save_filepath + ".pdf"
             if save_filepath:
                 merger = PdfFileMerger()
                 for f in self.__get_join_files():
@@ -603,6 +626,9 @@ class PyPDFBuilderApplication:
 
     def splittab_open_file(self):
         self.__splittab.open_file()
+        
+    def splittab_open_list(self):
+        self.__splittab.open_List()
 
     def splittab_save_as(self):
         self.__splittab.save_as()
@@ -662,6 +688,19 @@ class PyPDFBuilderApplication:
             initialdir=self.user_data.filedialog_path,
             title=widget_title,
             filetypes=(("PDF File", "*.pdf"), ("All Files", "*.*"))
+        )
+        if f:
+            if type(f) == list or type(f) == tuple:
+                self.user_data.filedialog_path = os.path.dirname(f[-1])
+            elif type(f) == str:
+                self.user_data.filedialog_path = os.path.dirname(f)
+            return f
+        
+    def get_list_dialog(self, func, widget_title='Choose File'):
+        f = func(
+            initialdir=self.user_data.filedialog_path,
+            title=widget_title,
+            filetypes=(("List File", "*.txt *.csv"), ("All Files", "*.*"))
         )
         if f:
             if type(f) == list or type(f) == tuple:
