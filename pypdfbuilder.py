@@ -347,7 +347,7 @@ class SplitTabManager:
                 with open(self.__split_fileNamePath) as f:
                     all = f.readlines()
                     for p in range(self.__split_file_info.pages):
-                        name = all[p][:-1]+".pdf"
+                        name = all[p].strip()+".pdf"
                         output_path = f"{basepath[:basepath.rfind('/')]}/{name}"
                         out_pdf = PdfFileWriter()
                         out_pdf.addPage(in_pdf.getPage(p))
